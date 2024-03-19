@@ -1,45 +1,23 @@
-# PROGRAMA
-    PROG = perfEG
-
-# Compilador
-    CC     = gcc
-    CFLAGS = -o0
-    LFLAGS = -lm
-
-# Lista de arquivos para distribuição
-DISTFILES = *.c *.h LEIAME* Makefile
-DISTDIR = `basename ${PWD}`
-
-# OBJETOS
-	OBJS = $(PROG).o system.o utils.o
-
-.PHONY: all clean purge dist
+TARGET=perfEG
+CC=gcc
+DEBUG= -g -O0
+WARN= -Wall
+CCFLAGS=$(DEBUG) $(WARN)
+LD=gcc
+OBJS= perfEG.o systems.o utils.o
 
 all: $(OBJS)
-	$(CC) $(CFLAGS) -o $(OBJS) $(LFLAGS)
+	$(LD) -o $(TARGET) $(OBJS) $(CCFLAGS)
+	@rm *.o
 
-$(PROG).o: $(PROG).c
-	@echo "Compilando $(PROG) ..."
-	@$(CC) $(CFLAGS) -o $(PROG) $(PROG).c $(LFLAGS)
+perfEG.o: perfEG.c
+	$(CC) -c $(CCFLAGS) perfEG.c -o perfEG.o
 
-system.o: system.c
-	@echo "Compilando system ..."
-	@$(CC) $(CFLAGS) -o system.o system.c $(LFLAGS)
+systems.o: systems.c
+	$(CC) -c $(CCFLAGS) systems.c -o systems.o
 
 utils.o: utils.c
-	@echo "Compilando utils ..."
-	@$(CC) $(CFLAGS) -o utils.o utils.c $(LFLAGS)
+	$(CC) -c $(CCFLAGS) utils.c -o utils.o
 
-clean:
-	@echo "Limpando sujeira ..."
-	@rm -f *~ *.bak
-
-purge:  clean
-	@echo "Limpando tudo ..."
-	@rm -f $(PROG) *.o core a.out $(DISTDIR) $(DISTDIR).tar
-
-dist: purge
-	@echo "Gerando arquivo de distribuição ($(DISTDIR).tar) ..."
-	@ln -s . $(DISTDIR)
-	@tar -cvf $(DISTDIR).tar $(addprefix ./$(DISTDIR)/, $(DISTFILES))
-	@rm -f $(DISTDIR)
+run: all
+	./perfEG
