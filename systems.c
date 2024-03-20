@@ -11,7 +11,7 @@
 #define MAX_SIZE 1000
 
 // Função para imprimir matriz
-void printMatrix(real_t **A, int n)
+void print_matrix(real_t **A, int n)
 {
     for (int i = 0; i < n; i++)
     {
@@ -29,7 +29,7 @@ void pivot(real_t **A, real_t *b, int n, int k)
     real_t temp;
     real_t *tempRow = (real_t *)malloc(n * sizeof(real_t));
     
-    printMatrix(A, n);
+    print_matrix(A, n);
 
     max = k;
     for (i = k + 1; i < n; i++)
@@ -49,7 +49,7 @@ void pivot(real_t **A, real_t *b, int n, int k)
         b[max] = temp;
     }
 
-    printMatrix(A, n);
+    print_matrix(A, n);
 }
 
 //linear systems solver with gauss elimination (pivot)
@@ -90,4 +90,105 @@ void gaussian_elimination(real_t **A, real_t *b, int n)
         printf("x[%d] = %f\n", i, x[i]);
     }
     free(x);
+}
+
+// Função para fazer a matriz A ter diagonal dominante
+void cc_dominant_diagonal(real_t **A, int n)
+{
+    int i, j;
+    real_t sum;
+
+    for (i = 0; i < n; i++)
+    {
+        sum = 0;
+        for (j = 0; j < n; j++)
+        {
+            if (i != j)
+                sum += ABS(A[i][j]);
+        }
+        A[i][i] = sum + 1;
+    }
+}
+
+// Função para fazer a matriz A ter diagonal dominante
+void cc_sassenfeld(real_t **A, int n)
+{
+    int i, j;
+    real_t sum;
+    real_t *beta = (real_t *)malloc(n * sizeof(real_t));
+
+    for (i = 0; i < n; i++)
+    {
+        sum = 0;
+        for (j = 0; j < n; j++)
+        {
+            if (i != j)
+                sum += ABS(A[i][j]);
+        }
+        beta[i] = sum / ABS(A[i][i]);
+    }
+
+    real_t max = beta[0];
+    for (i = 1; i < n; i++)
+    {
+        if (beta[i] > max)
+            max = beta[i];
+    }
+    free(beta);
+}
+
+real_t euclidian_norm(real_t *x, real_t *x_old, int n)
+{
+    int i;
+    real_t sum = 0;
+    for (i = 0; i < n; i++)
+    {
+        sum += (x[i] - x_old[i]) * (x[i] - x_old[i]);
+    }
+    return sqrt(sum);
+}
+
+// gauss seidel
+void gaussian_seidel(real_t **A, real_t *b, int n, real_t tol, int max_iter)
+{
+    int i, j, k;
+    real_t *x = (real_t *)malloc(n * sizeof(real_t));
+    real_t *x_old = (real_t *)malloc(n * sizeof(real_t));
+    real_t sum;
+
+    for (i = 0; i < n; i++)
+    {
+        x[i] = 0;
+    }
+
+    for (k = 0; k < max_iter; k++)
+    {
+        for (i = 0; i < n; i++)
+        {
+            x_old[i] = x[i];
+        }
+
+        for (i = 0; i < n; i++)
+        {
+            sum = 0;
+            for (j = 0; j < n; j++)
+            {
+                if (j != i)
+                    sum += A[i][j] * x[j];
+            }
+            x[i] = (b[i] - sum) / A[i][i];
+        }
+
+        if (euclidian_norm(x, x_old, n) < tol)
+        {
+            printf("Solução do sistema:\n");
+            for (i = 0; i < n; i++)
+            {
+                printf("x[%d] = %f\n", i, x[i]);
+            }
+            break;
+        }
+    }
+    free(x);
+    free(x_old);
 }

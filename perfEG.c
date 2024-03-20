@@ -28,6 +28,7 @@ int main( int argc, char *argv[])
     }
 
     gaussian_elimination(matriz, vetorB, n);
+    gaussian_seidel(matriz, vetorB, n, 0.0001, 1000);
 
     return 0;
 }
