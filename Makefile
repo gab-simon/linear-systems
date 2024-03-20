@@ -7,7 +7,7 @@ LD=gcc
 OBJS= perfEG.o systems.o utils.o
 
 all: $(OBJS)
-	$(LD) -o $(TARGET) $(OBJS) $(CCFLAGS)
+	$(LD) -o $(TARGET) $(OBJS) $(CCFLAGS) -lm
 	@rm *.o
 
 perfEG.o: perfEG.c
