@@ -22,7 +22,7 @@ void print_matrix(real_t **A, int n)
     printf("\n");
 }
 
-//pivotização total
+//pivotização parcial
 void pivot(real_t **A, real_t *b, int n, int k)
 {
     int i, max;
@@ -69,7 +69,7 @@ void gaussian_elimination(real_t **A, real_t *b, int n)
             {
                 A[j][k] = A[j][k] - factor * A[i][k];
             }
-            b[j] = b[j] - factor * b[i];
+            b[j] -= factor * b[i];
         }
     }
 
@@ -79,9 +79,9 @@ void gaussian_elimination(real_t **A, real_t *b, int n)
         x[i] = b[i];
         for (j = i + 1; j < n; j++)
         {
-            x[i] = x[i] - A[i][j] * x[j];
+            x[i] -= A[i][j] * x[j];
         }
-        x[i] = x[i] / A[i][i];
+        x[i] /= A[i][i];
     }
 
     printf("Solução do sistema:\n");
@@ -148,13 +148,30 @@ real_t euclidian_norm(real_t *x, real_t *x_old, int n)
     return sqrt(sum);
 }
 
+real_t max_value_vector(real_t *v, int n, real_t *max)
+{
+    int i;
+    *max = v[0];
+    for (i = 1; i < n; i++)
+    {
+        if (v[i] > *max)
+            *max = v[i];
+    }
+
+    return *max;
+}
+
 // gauss seidel
-void gaussian_seidel(real_t **A, real_t *b, int n, real_t tol, int max_iter)
+void gaussian_seidel(real_t **A, real_t *b, int n, real_t ε, int max_iter)
 {
     int i, j, k;
+
+    real_t sum;
+
+    real_t sums[n];
+
     real_t *x = (real_t *)malloc(n * sizeof(real_t));
     real_t *x_old = (real_t *)malloc(n * sizeof(real_t));
-    real_t sum;
 
     for (i = 0; i < n; i++)
     {
@@ -174,12 +191,13 @@ void gaussian_seidel(real_t **A, real_t *b, int n, real_t tol, int max_iter)
             for (j = 0; j < n; j++)
             {
                 if (j != i)
-                    sum += A[i][j] * x[j];
+                    sum +=A[i][j] * x[j]; 
             }
             x[i] = (b[i] - sum) / A[i][i];
+            sums[i] = (ABS(x[i] - x_old[i]));
         }
 
-        if (euclidian_norm(x, x_old, n) < tol)
+        if (max_value_vector(sums, n, &sum) < ε)
         {
             printf("Solução do sistema:\n");
             for (i = 0; i < n; i++)
@@ -188,7 +206,78 @@ void gaussian_seidel(real_t **A, real_t *b, int n, real_t tol, int max_iter)
             }
             break;
         }
+
     }
     free(x);
     free(x_old);
 }
+
+void matrix_to_vectors(real_t **A, real_t *a, real_t *c, real_t *d, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        d[i] = A[i][i];
+        if (i < n - 1)
+            c[i] = A[i][i + 1];
+        if (i > 0)
+            a[i] = A[i][i - 1];
+    }
+}
+
+int is_tridiagonal(real_t **A, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if ((i - j) > 1 || (j - i) > 1)
+            {
+                if (A[i][j] != 0)
+                    return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+// void tridiagonal_gaussian_elimination(double a, doubleb, double c, doubled, double x, int n) {
+//   for (int i = 1; i < n - 1; ++i) {
+//     double factor = b[i] / a[i];
+//     a[i + 1] -= factor c[i];
+//     d[i + 1] -= factor * d[i];
+//   }
+
+//   x[n - 1] = d[n - 1] / a[n - 1];
+
+//   for (int i = n - 2; i >= 0; --i) {
+//     x[i] = (d[i] - c[i] * x[i + 1]) / a[i];
+//   }
+
+void tridiagonal_gaussian_elimination(real_t *a, real_t *b, real_t *c, real_t *d, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        printf("a[%d] = %f\n", i, a[i]);
+    }
+    
+    for (int i = 1; i < n; i++)
+    {
+        real_t factor = b[i] / a[i];
+        a[i] -= factor * c[i - 1];
+        d[i] -= factor * d[i - 1];
+    }
+
+    d[n - 1] /= a[n - 1];
+
+    for (int i = n - 2; i >= 0; i--)
+    {
+        d[i] = (d[i] - c[i] * d[i + 1]) / a[i];
+    }
+
+    printf("Solução do sistema:\n");
+    for (int i = 0; i < n; i++)
+    {
+        printf("x[%d] = %f\n", i, d[i]);
+    }
+}
+
