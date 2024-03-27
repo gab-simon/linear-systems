@@ -84,11 +84,8 @@ void gaussian_elimination(real_t **A, real_t *b, int n)
         x[i] /= A[i][i];
     }
 
-    printf("Solução do sistema:\n");
-    for (i = 0; i < n; i++)
-    {
-        printf("x[%d] = %f\n", i, x[i]);
-    }
+    print_result(A, x, b, n);
+
     free(x);
 }
 
@@ -199,12 +196,7 @@ void gaussian_seidel(real_t **A, real_t *b, int n, real_t ε, int max_iter)
 
         if (max_value_vector(sums, n, &sum) < ε)
         {
-            printf("Solução do sistema:\n");
-            for (i = 0; i < n; i++)
-            {
-                printf("x[%d] = %f\n", i, x[i]);
-            }
-            break;
+            return print_result(A, x, b, n);
         }
 
     }
@@ -212,15 +204,19 @@ void gaussian_seidel(real_t **A, real_t *b, int n, real_t ε, int max_iter)
     free(x_old);
 }
 
-void matrix_to_vectors(real_t **A, real_t *a, real_t *c, real_t *d, int n)
+void matrix_to_vectors(real_t **A, vector_t *a, vector_t *c, vector_t *d, int n)
 {
+    a->data = (real_t *)malloc((n-1) * sizeof(real_t));
+    c->data = (real_t *)malloc((n-1) * sizeof(real_t));
+    d->data = (real_t *)malloc(n * sizeof(real_t));
+
     for (int i = 0; i < n; i++)
     {
-        d[i] = A[i][i];
+        d->data[i] = A[i][i];
         if (i < n - 1)
-            c[i] = A[i][i + 1];
+            c->data[i] = A[i][i + 1];
         if (i > 0)
-            a[i] = A[i][i - 1];
+            a->data[i] = A[i][i - 1];
     }
 }
 
@@ -253,31 +249,70 @@ int is_tridiagonal(real_t **A, int n)
 //     x[i] = (d[i] - c[i] * x[i + 1]) / a[i];
 //   }
 
-void tridiagonal_gaussian_elimination(real_t *a, real_t *b, real_t *c, real_t *d, int n)
+void tridiagonal_gaussian_elimination(real_t *a, real_t *c, real_t *d, real_t *b,  int n)
 {
-    for (int i = 0; i < n; i++)
-    {
-        printf("a[%d] = %f\n", i, a[i]);
-    }
-    
+    real_t *x = (real_t *)malloc(n * sizeof(real_t));
+
     for (int i = 1; i < n; i++)
     {
-        real_t factor = b[i] / a[i];
-        a[i] -= factor * c[i - 1];
-        d[i] -= factor * d[i - 1];
+        real_t factor = a[i] / d[i];
+        a[i + 1] -= factor * c[i];
+        b[i + 1] -= factor * b[i];
     }
 
-    d[n - 1] /= a[n - 1];
+    x[n - 1] = b[n - 1] / d[n - 1];
 
     for (int i = n - 2; i >= 0; i--)
     {
-        d[i] = (d[i] - c[i] * d[i + 1]) / a[i];
+        x[i] = (b[i] - c[i] * x[i + 1]) / d[i];
     }
+
+    print_result_tridiagonal(a, c, d, x, b, n);
+
+    free(x);
+}
+
+void print_result_tridiagonal(real_t *a, real_t *c, real_t *d, real_t *x, real_t *b, int n)
+{
+    real_t *r = (real_t *)malloc(n * sizeof(real_t));
 
     printf("Solução do sistema:\n");
     for (int i = 0; i < n; i++)
     {
-        printf("x[%d] = %f\n", i, d[i]);
+        printf("x[%d] = %.128f\n", i, x[i]);
     }
+
+    printf("Resíduo do sistema:\n");
+    for (int i = 0; i < n; i++)
+    {
+        r[i] = b[i];
+        r[i] -= a[i] * x[i - 1] + d[i] * x[i] + c[i] * x[i + 1];
+        printf("r[%d] = %.128f\n", i, ABS(r[i]));
+    }
+
+    free(r);
+}
+
+void print_result(real_t **A, real_t *x, real_t *b, int n)
+{
+    real_t *r = (real_t *)malloc(n * sizeof(real_t));
+
+    printf("Solução do sistema:\n");
+    for (int i = 0; i < n; i++)
+    {
+        printf("x[%d] = %.128f\n", i, x[i]);
+    }
+
+    printf("Resíduo do sistema:\n");
+    for (int i = 0; i < n; i++)
+    {
+        r[i] = b[i];
+        for (int j = 0; j < n; j++)
+        {
+            r[i] -= A[i][j] * x[j];
+        }
+        printf("r[%d] = %.128f\n", i, ABS(r[i]));
+    }
+    free(r);
 }
 

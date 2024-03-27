@@ -3,6 +3,10 @@
 
 #include "utils.h"
 
+typedef struct {
+  real_t *data;
+} vector_t;
+
 // functions
 
 // gaussian elimination recebe uma matriz A e um vetor b e resolve o sistema Ax = b
@@ -27,16 +31,19 @@ real_t euclidian_norm(real_t *x, real_t *x_old, int n);
 void print_matrix(real_t **A, int n);
 
 // residual_calc recebe uma matriz A, um vetor x, um vetor b e um inteiro n e retorna o resíduo do sistema
-real_t residual_calc(real_t **A, real_t *x, real_t *b, int n);
+void print_result(real_t **A, real_t *x, real_t *b, int n);
+
+// print_result_tridiagonal imprime o resultado do sistema tridiagonal
+void print_result_tridiagonal(real_t *a, real_t *c, real_t *d, real_t *x, real_t *b, int n);
 
 // max_value_vector recebe um vetor v, um inteiro n e um ponteiro para um real max e retorna o maior valor do vetor
 real_t max_value_vector(real_t *v, int n, real_t *max);
 
 // triagonal_gaussian_elimination recebe uma matriz A e um vetor b e resolve o sistema Ax = b
-void tridiagonal_gaussian_elimination(real_t *a, real_t *b, real_t *c, real_t *d, int n);
+void tridiagonal_gaussian_elimination(real_t *a, real_t *c, real_t *d, real_t *b, int n);
 
 // matrix_to_vector_diag recebe uma matriz A e um inteiro n e retorna o vetor diagonal
-void matrix_to_vectors(real_t **A, real_t *a, real_t *c, real_t *d, int n);
+void matrix_to_vectors(real_t **A, vector_t *a, vector_t *c, vector_t *d, int n);
 
 // is_tridiagonal recebe uma matriz A e um inteiro n e retorna se a matriz é tridiagonal
 int is_tridiagonal(real_t **A, int n);

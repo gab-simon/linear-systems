@@ -31,15 +31,13 @@ int main( int argc, char *argv[])
     gaussian_seidel(matriz, vetorB, n, 0.0001, 1000);
 
     if(is_tridiagonal(matriz, n)){
-        real_t a[n];
-        real_t c[n];
-        real_t d[n];
+        vector_t *a = malloc(n * sizeof(vector_t));
+        vector_t *c = malloc(n * sizeof(vector_t));
+        vector_t *d = malloc(n + 1 * sizeof(vector_t));
+
         matrix_to_vectors(matriz, a, c, d, n);
 
-        for (int i = 0; i < n; i++) {
-            printf("a[%d] = %f\n", i, a[i]);
-        }
-        tridiagonal_gaussian_elimination(a, vetorB, c, d, n);
+        tridiagonal_gaussian_elimination(a->data, c->data, d->data, vetorB, n);
     } else {
         printf("A matriz não é tridiagonal\n");
     }
