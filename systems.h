@@ -42,10 +42,10 @@ real_t max_value_vector(real_t *v, int n, real_t *max);
 // triagonal_gaussian_elimination recebe uma matriz A e um vetor b e resolve o sistema Ax = b
 void tridiagonal_gaussian_elimination(real_t *a, real_t *c, real_t *d, real_t *b, int n);
 
+// tridiagonal_gaussian_seidel recebe uma matriz A, um vetor b, um inteiro n, um real ε e um inteiro max_iter e resolve o sistema Ax = b
+void tridiagonal_gaussian_seidel(real_t *a, real_t *c, real_t *d, real_t *b, int n, real_t ε, int max_iter);
+
 // matrix_to_vector_diag recebe uma matriz A e um inteiro n e retorna o vetor diagonal
 void matrix_to_vectors(real_t **A, vector_t *a, vector_t *c, vector_t *d, int n);
-
-// is_tridiagonal recebe uma matriz A e um inteiro n e retorna se a matriz é tridiagonal
-int is_tridiagonal(real_t **A, int n);
 
 #endif // __SYSTEMS_H__

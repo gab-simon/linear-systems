@@ -29,8 +29,6 @@ void pivot(real_t **A, real_t *b, int n, int k)
     real_t temp;
     real_t *tempRow = (real_t *)malloc(n * sizeof(real_t));
     
-    print_matrix(A, n);
-
     max = k;
     for (i = k + 1; i < n; i++)
     {
@@ -48,8 +46,6 @@ void pivot(real_t **A, real_t *b, int n, int k)
         b[k] = b[max];
         b[max] = temp;
     }
-
-    print_matrix(A, n);
 }
 
 //linear systems solver with gauss elimination (pivot)
@@ -67,7 +63,7 @@ void gaussian_elimination(real_t **A, real_t *b, int n)
             factor = A[j][i] / A[i][i];
             for (k = i; k < n; k++)
             {
-                A[j][k] = A[j][k] - factor * A[i][k];
+                A[j][k] -= factor * A[i][k];
             }
             b[j] -= factor * b[i];
         }
@@ -220,35 +216,6 @@ void matrix_to_vectors(real_t **A, vector_t *a, vector_t *c, vector_t *d, int n)
     }
 }
 
-int is_tridiagonal(real_t **A, int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            if ((i - j) > 1 || (j - i) > 1)
-            {
-                if (A[i][j] != 0)
-                    return 0;
-            }
-        }
-    }
-    return 1;
-}
-
-// void tridiagonal_gaussian_elimination(double a, doubleb, double c, doubled, double x, int n) {
-//   for (int i = 1; i < n - 1; ++i) {
-//     double factor = b[i] / a[i];
-//     a[i + 1] -= factor c[i];
-//     d[i + 1] -= factor * d[i];
-//   }
-
-//   x[n - 1] = d[n - 1] / a[n - 1];
-
-//   for (int i = n - 2; i >= 0; --i) {
-//     x[i] = (d[i] - c[i] * x[i + 1]) / a[i];
-//   }
-
 void tridiagonal_gaussian_elimination(real_t *a, real_t *c, real_t *d, real_t *b,  int n)
 {
     real_t *x = (real_t *)malloc(n * sizeof(real_t));
@@ -272,6 +239,46 @@ void tridiagonal_gaussian_elimination(real_t *a, real_t *c, real_t *d, real_t *b
     free(x);
 }
 
+void tridiagonal_gaussian_seidel(real_t *a, real_t *c, real_t *d, real_t *b, int n, real_t ε, int max_iter)
+{
+    int i, k;
+    real_t sum;
+    real_t *x = (real_t *)malloc(n * sizeof(real_t));
+    real_t *x_old = (real_t *)malloc(n * sizeof(real_t));
+    real_t *sums = (real_t *)malloc(n * sizeof(real_t));
+
+    for (i = 0; i < n; i++)
+    {
+        x[i] = 0;
+    }
+
+    for (k = 0; k < max_iter; k++)
+    {
+        for (i = 0; i < n; i++)
+        {
+            x_old[i] = x[i];
+        }
+
+        for (i = 0; i < n; i++)
+        {
+            sum = 0;
+            if (i > 0)
+                sum += a[i] * x[i - 1];
+            if (i < n - 1)
+                sum += c[i] * x[i + 1];
+            x[i] = (b[i] - sum) / d[i];
+            sums[i] = ABS(x[i] - x_old[i]);
+        }
+
+        if (max_value_vector(sums, n, &sum) < ε)
+            return print_result_tridiagonal(a, c, d, x, b, n);
+    }
+
+    free(x);
+    free(x_old);
+    free(sums);
+}
+
 void print_result_tridiagonal(real_t *a, real_t *c, real_t *d, real_t *x, real_t *b, int n)
 {
     real_t *r = (real_t *)malloc(n * sizeof(real_t));
@@ -279,7 +286,7 @@ void print_result_tridiagonal(real_t *a, real_t *c, real_t *d, real_t *x, real_t
     printf("Solução do sistema:\n");
     for (int i = 0; i < n; i++)
     {
-        printf("x[%d] = %.128f\n", i, x[i]);
+        printf("x[%d] = %.12f\n", i, x[i]);
     }
 
     printf("Resíduo do sistema:\n");
@@ -287,7 +294,7 @@ void print_result_tridiagonal(real_t *a, real_t *c, real_t *d, real_t *x, real_t
     {
         r[i] = b[i];
         r[i] -= a[i] * x[i - 1] + d[i] * x[i] + c[i] * x[i + 1];
-        printf("r[%d] = %.128f\n", i, ABS(r[i]));
+        printf("r[%d] = %.12f\n", i, ABS(r[i]));
     }
 
     free(r);
@@ -300,7 +307,7 @@ void print_result(real_t **A, real_t *x, real_t *b, int n)
     printf("Solução do sistema:\n");
     for (int i = 0; i < n; i++)
     {
-        printf("x[%d] = %.128f\n", i, x[i]);
+        printf("x[%d] = %.12f\n", i, x[i]);
     }
 
     printf("Resíduo do sistema:\n");
@@ -311,8 +318,9 @@ void print_result(real_t **A, real_t *x, real_t *b, int n)
         {
             r[i] -= A[i][j] * x[j];
         }
-        printf("r[%d] = %.128f\n", i, ABS(r[i]));
+        printf("r[%d] = %.12f\n", i, ABS(r[i]));
     }
+
     free(r);
 }
 
